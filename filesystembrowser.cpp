@@ -13,21 +13,24 @@ FileSystemBrowser::FileSystemBrowser(QWidget *parent)
   columnView = new QColumnView(parent);
   columnView->setModel(model);
 
+  // set up splitter
   splitter = new QSplitter;
   splitter->addWidget(columnView);
   splitter->addWidget(tableView);
+
+  // change sizes
   int w = tableView->columnWidth(0) * model->columnCount (QModelIndex());
   splitter->widget(1)->setMinimumWidth(w);
   QList <int > listOfSizes;
   listOfSizes << static_cast < int >(columnView->width() * 3) << w ;
   splitter->setSizes(listOfSizes);
-  //synchronise the two views
 
+  // synchronise the two views
   QItemSelectionModel *selectionModel = columnView->selectionModel();
 
   columnView->setSelectionMode (QAbstractItemView::SingleSelection);
-  tableView->setSelectionModel(selectionModel);
   tableView->setSelectionMode (QAbstractItemView::SingleSelection);
+  tableView->setSelectionModel(selectionModel);
 
   // connections
   QObject::connect( columnView
@@ -41,26 +44,21 @@ FileSystemBrowser::FileSystemBrowser(QWidget *parent)
                    ,SLOT(syncSelection(QItemSelection,QItemSelection)));
 
 
-  //synchronise the up button with the views
+  // synchronise the up button with the views
   up = new QPushButton(tr("Up"));
   up->setMaximumWidth (80);
   QObject::connect(up, SIGNAL(clicked()), this, SLOT (previousDir()));
 
 
-  QObject::connect(this, SIGNAL(rootChanged(QModelIndex))
-                   ,columnView, SLOT(setCurrentIndex(QModelIndex)));
-
   addressBar = new QComboBox();
   addressBar->setModel(model);
+  QObject::connect(this, SIGNAL(pathChanged(QModelIndex))
+                  ,this, SLOT(setAddressPath(QModelIndex)));
 
-//  QObject::connect(model, SIGNAL(directoryLoaded(QString)), addressBar, SLOT(setEditText(QString)));
-//  QObject::connect(tableView, SIGNAL(rootChangedTo(QString)), addressBar, SLOT(setEditText(QString)));
+  QObject::connect(this, SIGNAL(addressPath(QString))
+                  ,addressBar, SLOT(setEditText(QString)));
+
   addressBar->setEditable (true);
-
-//  QObject::connect( tableView, SIGNAL(entered(QModelIndex))
-//                   this, );
-//  QObject::connect(this, SIGNAL(dataChanged(QModelIndex,QModelIndex))
-//                  ,tableView, SLOT(dataChanged(QModelIndex,QModelIndex)));
 
   layout = new QVBoxLayout();
   layout1 = new QHBoxLayout();
@@ -97,20 +95,21 @@ void FileSystemBrowser::previousDir()
 {
   const QModelIndex &index = getParent(this->tableView->rootIndex());
   changeRootIndex(index);
-  emit rootChanged(index);
+  emit pathChanged(index);
 }
 void FileSystemBrowser::changeRootIndex(QModelIndex index)
 {
   if (index.isValid ())
   {
     tableView->setRootIndex(index);
+    emit pathChanged(index);
     emit dataChanged(index, index);
-    emit rootChangedTo(index.data(Qt::DisplayRole).toString());
   }
   qDebug() << tr("no");
 }
 
-void FileSystemBrowser::changeCurrentDir (QString dir)
+void FileSystemBrowser::setAddressPath (const QModelIndex &file)
 {
+  emit addressPath(model->filePath(file));
 
 }

@@ -10,15 +10,14 @@ public:
   FileSystemBrowser(QWidget *parent = 0);
   QModelIndex getParent(QModelIndex child);
 signals:
-  void rootChanged(QModelIndex);
-  void rootChangedTo(QString);
-  void rootChangedTo(QModelIndex);
+  void pathChanged(QModelIndex);
+  void addressPath(QString);
   void dataChanged(QModelIndex, QModelIndex);
 public slots:
   void changeRootIndex(QModelIndex);
   void syncSelection(QItemSelection, QItemSelection);
   void previousDir();
-  void changeCurrentDir(QString);
+  void setAddressPath(const QModelIndex &file);
 private:
   QFileSystemModel *model;
   QSplitter *splitter;
