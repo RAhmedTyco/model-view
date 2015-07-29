@@ -10,14 +10,15 @@ public:
   FileSystemBrowser(QWidget *parent = 0);
   QModelIndex getParent(QModelIndex child);
 signals:
-  void getRootIndex(QModelIndex index);
+  void rootChanged(QModelIndex);
   void rootChangedTo(QString);
+  void rootChangedTo(QModelIndex);
   void dataChanged(QModelIndex, QModelIndex);
 public slots:
-//  void changeRootIndex(QModelIndex);
-//  void syncSelection(QItemSelection, QItemSelection);
+  void changeRootIndex(QModelIndex);
+  void syncSelection(QItemSelection, QItemSelection);
   void previousDir();
-//  void findFolder(QString);
+  void changeCurrentDir(QString);
 private:
   QFileSystemModel *model;
   QSplitter *splitter;
@@ -27,6 +28,7 @@ private:
   QColumnView *columnView;
   QPushButton *up;
   QComboBox *addressBar;
+  QString *currentDir;
 };
 
 #endif // FILESYSTEMBROWSER_H

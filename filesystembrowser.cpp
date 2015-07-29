@@ -6,7 +6,7 @@ FileSystemBrowser::FileSystemBrowser(QWidget *parent)
   model = new QFileSystemModel;
   model->setRootPath(QDir::homePath ());
 
-  tableView = new CustomTable(parent);
+  tableView = new QTableView(parent);
   tableView->setModel(model);
   tableView->verticalHeader ()->hide();
 
@@ -37,7 +37,7 @@ FileSystemBrowser::FileSystemBrowser(QWidget *parent)
 
   QObject::connect( selectionModel
                    ,SIGNAL(selectionChanged(QItemSelection,QItemSelection))
-                   ,tableView
+                   ,this
                    ,SLOT(syncSelection(QItemSelection,QItemSelection)));
 
 
@@ -47,7 +47,7 @@ FileSystemBrowser::FileSystemBrowser(QWidget *parent)
   QObject::connect(up, SIGNAL(clicked()), this, SLOT (previousDir()));
 
 
-  QObject::connect(tableView, SIGNAL(getRootIndex(QModelIndex))
+  QObject::connect(this, SIGNAL(rootChanged(QModelIndex))
                    ,columnView, SLOT(setCurrentIndex(QModelIndex)));
 
   addressBar = new QComboBox();
@@ -59,8 +59,8 @@ FileSystemBrowser::FileSystemBrowser(QWidget *parent)
 
 //  QObject::connect( tableView, SIGNAL(entered(QModelIndex))
 //                   this, );
-  QObject::connect(this, SIGNAL(dataChanged(QModelIndex,QModelIndex))
-                  ,tableView, SLOT(dataChanged(QModelIndex,QModelIndex)));
+//  QObject::connect(this, SIGNAL(dataChanged(QModelIndex,QModelIndex))
+//                  ,tableView, SLOT(dataChanged(QModelIndex,QModelIndex)));
 
   layout = new QVBoxLayout();
   layout1 = new QHBoxLayout();
@@ -71,6 +71,16 @@ FileSystemBrowser::FileSystemBrowser(QWidget *parent)
   setLayout(layout);
   //splitter->show();
 }
+void FileSystemBrowser::syncSelection(QItemSelection selected, QItemSelection deselected)
+{
+  qDebug() << tr("yes");
+  if(!selected.isEmpty ())
+  {
+    QModelIndex lastSelected = selected.back ().indexes ().back ();
+    changeRootIndex(lastSelected);
+  }
+}
+
 QModelIndex FileSystemBrowser::getParent(QModelIndex child)
 {
   QString st = child.data (Qt::DisplayRole).toString();
@@ -86,7 +96,11 @@ QModelIndex FileSystemBrowser::getParent(QModelIndex child)
 void FileSystemBrowser::previousDir()
 {
   const QModelIndex &index = getParent(this->tableView->rootIndex());
-  //changeRootIndex();
+  changeRootIndex(index);
+  emit rootChanged(index);
+}
+void FileSystemBrowser::changeRootIndex(QModelIndex index)
+{
   if (index.isValid ())
   {
     tableView->setRootIndex(index);
@@ -94,6 +108,9 @@ void FileSystemBrowser::previousDir()
     emit rootChangedTo(index.data(Qt::DisplayRole).toString());
   }
   qDebug() << tr("no");
+}
 
-  emit getRootIndex(index);
+void FileSystemBrowser::changeCurrentDir (QString dir)
+{
+
 }
