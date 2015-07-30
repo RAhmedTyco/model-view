@@ -1,10 +1,8 @@
 SOURCES += \
     main.cpp \
     filesystembrowser.cpp \
-    mainwindow.cpp \
-    customtable.cpp
+    mainwindow.cpp
 
 HEADERS += \
     filesystembrowser.h \
-    mainwindow.h \
-    customtable.h
+    mainwindow.h
